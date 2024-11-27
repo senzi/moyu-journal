@@ -25,14 +25,27 @@
         还没有任何项目，开始创建或导入吧！
       </div>
 
-      <draggable v-model="projects" v-else class="project-list" ghost-class="ghost" @start="drag = true"
+      <draggable v-model="projects" v-else class="project-list" ghost-class="ghost" 
+        :item-key="'id'"
+        @start="drag = true"
         @end="drag = false">
         <template #item="{ element: project }">
           <div class="project-card">
             <div class="card-header" :class="{ 'edit-mode': editMode === project.id }">
               <div class="project-title">
-                <div class="emoji-icon">{{ project.emoji_icon || '🚀' }}</div>
-                <h3>{{ project.title || '未命名项目' }}</h3>
+                <div class="emoji-icon" v-if="editMode !== project.id">{{ project.emoji_icon || '🚀' }}</div>
+                <select v-else v-model="project.emoji_icon" class="emoji-select">
+                  <option value="🚀">🚀</option>
+                  <option value="💻">💻</option>
+                  <option value="🎮">🎮</option>
+                  <option value="📱">📱</option>
+                  <option value="🎨">🎨</option>
+                  <option value="📚">📚</option>
+                  <option value="🎵">🎵</option>
+                  <option value="🛠">🛠</option>
+                </select>
+                <h3 v-if="editMode !== project.id">{{ project.title || '未命名项目' }}</h3>
+                <input v-else v-model="project.title" class="title-input" placeholder="项目名称" @keyup.enter="saveEdit(project)">
               </div>
               <div class="card-actions">
                 <button class="edit-btn" @click="toggleEditMode(project)">
@@ -47,18 +60,27 @@
             <div class="project-content">
               <div class="project-tags">
                 <span class="tag date">{{ formatDate(project.createdAt) }}</span>
-                <span class="tag status">{{ project.status || '未设置' }}</span>
-                <span class="tag tech">{{ project.techStack || '未设置' }}</span>
+                <span v-if="editMode !== project.id" class="tag status">{{ project.status || '规划中' }}</span>
+                <select v-else v-model="project.status" class="status-select">
+                  <option value="规划中">规划中</option>
+                  <option value="进行中">进行中</option>
+                  <option value="已完成">已完成</option>
+                  <option value="已搁置">已搁置</option>
+                </select>
+                <span v-if="editMode !== project.id" class="tag tech">{{ project.techStack || '未设置技术栈' }}</span>
+                <input v-else v-model="project.techStack" class="tech-input" placeholder="使用技术">
               </div>
 
               <div class="project-notes">
                 <div class="note-section">
                   <label>打算怎么摸？</label>
-                  <div class="note-content">{{ project.description || '暂无描述' }}</div>
+                  <div v-if="editMode !== project.id" class="note-content">{{ project.description || '暂无描述' }}</div>
+                  <textarea v-else v-model="project.description" class="description-input" placeholder="打算怎么摸？"></textarea>
                 </div>
                 <div class="note-section">
                   <label>吐槽</label>
-                  <div class="note-content">{{ project.thoughts || '暂无记录' }}</div>
+                  <div v-if="editMode !== project.id" class="note-content">{{ project.thoughts || '暂无记录' }}</div>
+                  <textarea v-else v-model="project.thoughts" class="description-input" placeholder="有什么想吐槽的？"></textarea>
                 </div>
               </div>
 
@@ -71,6 +93,10 @@
                   <span class="material-icons">code</span>
                   查看仓库
                 </a>
+                <div v-if="editMode === project.id" class="link-inputs">
+                  <input v-model="project.demoLink" class="link-input" placeholder="演示链接（可选）">
+                  <input v-model="project.repoLink" class="link-input" placeholder="仓库链接（可选）">
+                </div>
               </div>
             </div>
           </div>
@@ -82,6 +108,7 @@
 
 <script>
 import draggable from 'vuedraggable'
+import { nanoid } from 'nanoid';
 
 export default {
   components: {
@@ -161,7 +188,7 @@ export default {
 
     createNew() {
       const newProject = {
-        id: crypto.randomUUID(),
+        id: nanoid(),
         createdAt: new Date().toISOString(),
         title: '',
         emoji_icon: '🚀', // 默认emoji
@@ -251,6 +278,13 @@ export default {
         month: 'numeric',
         day: 'numeric'
       })
+    },
+    saveEdit(project) {
+      this.editMode = null
+      this.saveProjects()
+    },
+    cancelEdit(project) {
+      this.editMode = null
     }
   }
 }
@@ -462,7 +496,8 @@ h1 {
 }
 
 .edit-btn,
-.delete-btn {
+.delete-btn,
+.cancel-btn {
   width: 36px;
   height: 36px;
   border: none;
@@ -490,6 +525,15 @@ h1 {
 
 .delete-btn:hover {
   background-color: #ffcdd2;
+}
+
+.cancel-btn {
+  background-color: #f8f9fa;
+  color: #5f6368;
+}
+
+.cancel-btn:hover {
+  background-color: #f1f3f4;
 }
 
 /* 项目内容样式 */
@@ -612,5 +656,72 @@ h1 {
     width: 100%;
     justify-content: center;
   }
+}
+
+.emoji-select {
+  padding: 6px 12px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+.title-input {
+  padding: 6px 12px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  background: white;
+  width: 100%;
+}
+
+.status-select {
+  padding: 6px 12px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+.tech-input {
+  padding: 6px 12px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  background: white;
+  width: 100%;
+}
+
+.description {
+  color: #202124;
+  line-height: 1.6;
+}
+
+.description-input {
+  padding: 6px 12px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  background: white;
+  width: 100%;
+  height: 100px;
+  resize: none;
+}
+
+.demo-link {
+  margin-top: 16px;
+}
+
+.demo-input {
+  padding: 6px 12px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  background: white;
+  width: 100%;
+}
+
+.link-input {
+  padding: 6px 12px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  background: white;
+  width: 100%;
 }
 </style>
