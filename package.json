@@ -10,7 +10,9 @@
     "bd": "vite build && sudo cp -r dist/* /opt/1panel/apps/openresty/openresty/www/sites/moyu/index/"
   },
   "dependencies": {
+    "@headlessui/vue": "^1.7.23",
     "nanoid": "^5.0.9",
+    "v-calendar": "^3.1.2",
     "vue": "^3.5.12",
     "vue3-emoji-picker": "^1.1.8",
     "vuedraggable": "^4.1.0"

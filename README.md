@@ -4,7 +4,7 @@
 
 一个简单优雅的个人项目管理工具，帮助你记录和展示你的"摸鱼"成果。无需后端，纯前端实现，数据存储在浏览器本地。
 
-![License](https://img.shields.io/github/license/sennes2/moyu-journal)
+![License](https://img.shields.io/github/license/senzi/moyu-journal)
 
 ## ✨ 特性
 
@@ -53,7 +53,7 @@ pnpm run build  # 或 bun run build
 - 🖼️ [Vue 3](https://vuejs.org/) - 渐进式 JavaScript 框架
 - 🏗️ [Vite](https://vitejs.dev/) - 下一代前端构建工具
 - 📦 [pnpm](https://pnpm.io/) / [Bun](https://bun.sh/) - 包管理器
-- 🎨 [vue3-emoji-picker](https://github.com/wobsoriano/vue3-emoji-picker) - Emoji 选择器
+- 🎨 [vue3-emoji-picker](https://github.com/delowardev/vue3-emoji-picker) - Emoji 选择器
 - 🎯 [vuedraggable](https://github.com/SortableJS/Vue.Draggable) - 拖拽排序
 - 🔑 [nanoid](https://github.com/ai/nanoid) - 唯一 ID 生成
 
