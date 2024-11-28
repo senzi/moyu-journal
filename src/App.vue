@@ -168,12 +168,12 @@
     <footer class="footer">
       <div class="footer-content">
         <div class="footer-links">
-          <a href="https://github.com/sennes2/moyu-journal" target="_blank">
+          <a href="https://github.com/senzi/moyu-journal" target="_blank">
             <span class="material-icons">code</span>
             <span>GitHub</span>
           </a>
           <span class="separator">|</span>
-          <a href="https://github.com/sennes2/moyu-journal/blob/main/LICENSE" target="_blank">
+          <a href="https://github.com/senzi/moyu-journal/blob/main/LICENSE" target="_blank">
             <span class="material-icons">gavel</span>
             <span>MIT License</span>
           </a>
