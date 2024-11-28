@@ -64,7 +64,8 @@
       <draggable v-model="sortedProjects" v-else class="project-list" ghost-class="ghost" 
         :item-key="'id'"
         @start="drag = true"
-        @end="drag = false">
+        @end="drag = false"
+        :disabled="editMode !== null">
         <template #item="{ element: project }">
           <div class="project-card">
             <div class="card-header" :class="{ 'edit-mode': editMode === project.id }">
