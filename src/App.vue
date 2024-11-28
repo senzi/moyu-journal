@@ -105,7 +105,14 @@
 
             <div class="project-content">
               <div class="project-tags">
-                <span class="tag date">{{ formatDate(project.createdAt) }}</span>
+                <span v-if="editMode !== project.id" class="tag date">{{ formatDate(project.createdAt) }}</span>
+                <input
+                  v-else
+                  type="date"
+                  class="date-input"
+                  :value="formatDateForInput(project.createdAt)"
+                  @input="updateDate($event, project)"
+                >
                 <span v-if="editMode !== project.id" class="tag status">{{ project.status || '规划中' }}</span>
                 <select v-else v-model="project.status" class="status-select">
                   <option value="规划中">规划中</option>
@@ -394,6 +401,13 @@ export default {
         month: 'numeric',
         day: 'numeric'
       })
+    },
+    formatDateForInput(date) {
+      return new Date(date).toISOString().split('T')[0]
+    },
+    updateDate(event, project) {
+      project.createdAt = event.target.value + 'T00:00:00.000Z'
+      this.saveProjects()
     },
     saveEdit(project) {
       this.editMode = null
