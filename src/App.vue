@@ -22,12 +22,23 @@
         <button class="menu-trigger" @click="isMenuOpen = !isMenuOpen">
           <span class="material-icons">more_vert</span>
         </button>
-        <div class="menu-dropdown" v-show="isMenuOpen" @click="isMenuOpen = false">
+        <div class="menu-dropdown" v-show="isMenuOpen" @click.stop="isMenuOpen = false">
           <input type="file" accept=".jsonl" @change="importFile" style="display: none" ref="fileInput">
           <button @click="$refs.fileInput.click()">导入文件</button>
           <button @click="importFromURL">从URL导入</button>
           <button @click="exportData">导出数据</button>
-          <button @click="clearAll" class="danger">清空数据</button>
+          <div class="delete-wrapper">
+            <button @click.stop="showClearConfirm" class="danger">清空数据</button>
+            <div class="delete-confirm" v-if="showClearConfirmDialog" @click.stop>
+              <span class="confirm-text">确定清空</span>
+              <button class="confirm-btn confirm-yes" @click.stop="confirmClear">
+                <span class="material-icons">check</span>
+              </button>
+              <button class="confirm-btn confirm-no" @click.stop="cancelClear">
+                <span class="material-icons">close</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -47,7 +58,7 @@
       </div>
 
       <div v-if="projects.length === 0" class="empty-state">
-        还没有任何项目，开始创建或导入吧！
+        还没有任何摸鱼项目，开始摸鱼或导入数据吧！
       </div>
 
       <draggable v-model="sortedProjects" v-else class="project-list" ghost-class="ghost" 
@@ -76,15 +87,15 @@
                   <span class="material-icons">{{ editMode === project.id ? 'done' : 'edit' }}</span>
                 </button>
                 <div class="delete-wrapper" v-if="editMode === project.id">
-                  <button class="delete-btn" @click="showDeleteConfirm(project.id)">
+                  <button class="delete-btn" @click.stop="showDeleteConfirm(project.id)">
                     <span class="material-icons">delete</span>
                   </button>
-                  <div class="delete-confirm" v-if="deleteConfirmId === project.id">
-                    <span class="confirm-text">确定删除？</span>
-                    <button class="confirm-btn confirm-yes" @click="confirmDelete(project.id)">
+                  <div class="delete-confirm" v-if="deleteConfirmId === project.id" @click.stop>
+                    <span class="confirm-text">确定删除</span>
+                    <button class="confirm-btn confirm-yes" @click.stop="confirmDelete(project.id)">
                       <span class="material-icons">check</span>
                     </button>
-                    <button class="confirm-btn confirm-no" @click="cancelDelete">
+                    <button class="confirm-btn confirm-no" @click.stop="cancelDelete">
                       <span class="material-icons">close</span>
                     </button>
                   </div>
@@ -108,14 +119,14 @@
 
               <div class="project-notes">
                 <div class="note-section">
-                  <label>打算怎么摸？</label>
+                  <label>打算怎么摸</label>
                   <div v-if="editMode !== project.id" class="note-content">{{ project.description || '暂无描述' }}</div>
-                  <textarea v-else v-model="project.description" class="description-input" placeholder="打算怎么摸？"></textarea>
+                  <textarea v-else v-model="project.description" class="description-input" placeholder="打算怎么摸"></textarea>
                 </div>
                 <div class="note-section">
                   <label>吐槽</label>
                   <div v-if="editMode !== project.id" class="note-content">{{ project.thoughts || '暂无记录' }}</div>
-                  <textarea v-else v-model="project.thoughts" class="description-input" placeholder="有什么想吐槽的？"></textarea>
+                  <textarea v-else v-model="project.thoughts" class="description-input" placeholder="有什么想吐槽的"></textarea>
                 </div>
               </div>
 
@@ -190,7 +201,8 @@ export default {
       drag: false,
       editUsername: false,
       username: localStorage.getItem('moyu-username') || '',
-      deleteConfirmId: null
+      deleteConfirmId: null,
+      showClearConfirmDialog: false,
     }
   },
 
@@ -359,10 +371,22 @@ export default {
     },
 
     clearAll() {
-      if (confirm('确定要清空所有数据吗？')) {
-        this.projects = []
-        this.saveProjects()
-      }
+      this.projects = []
+      this.saveProjects()
+      this.showClearConfirmDialog = false
+      this.isMenuOpen = false  // 只在实际清空数据时关闭菜单
+    },
+    
+    showClearConfirm() {
+      this.showClearConfirmDialog = true
+    },
+    
+    cancelClear() {
+      this.showClearConfirmDialog = false
+    },
+    
+    confirmClear() {
+      this.clearAll()
     },
     formatDate(date) {
       return new Date(date).toLocaleDateString('zh-CN', {
@@ -1041,9 +1065,92 @@ header {
   color: #1a73e8;
 }
 
+.menu-dropdown button.danger {
+  color: #d93025;
+}
+
 .menu-dropdown button.danger:hover {
   background-color: #fce8e8;
+}
+
+.menu-dropdown .delete-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.menu-dropdown .delete-confirm {
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: 1px solid rgba(217, 48, 37, 0.2);
+  border-radius: 8px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.2s ease;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+.confirm-text {
   color: #d93025;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.confirm-btn {
+  background: none;
+  border: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.confirm-btn .material-icons {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-yes {
+  color: #34a853;
+}
+
+.confirm-yes:hover {
+  background-color: #e6f4ea;
+}
+
+.confirm-no {
+  color: #d93025;
+}
+
+.confirm-no:hover {
+  background-color: #fce8e8;
 }
 
 .title-section {
@@ -1112,72 +1219,75 @@ header {
 /* 删除确认框样式 */
 .delete-wrapper {
   position: relative;
+  display: inline-block;
 }
 
 .delete-confirm {
   position: absolute;
-  right: calc(100% + 8px);
-  top: 50%;
-  transform: translateY(-50%);
+  right: 0;
+  top: calc(100% + 8px);
   background: white;
-  border: 1px solid #dadce0;
+  padding: 8px 12px;
   border-radius: 8px;
-  padding: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  animation: slideIn 0.2s ease;
-  z-index: 10;
+  gap: 8px;
   white-space: nowrap;
+  z-index: 10;
+  border: 1px solid rgba(217, 48, 37, 0.2);
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-50%) translateX(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(-50%) translateX(0);
-  }
+.delete-confirm::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 12px;
+  transform: rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-left: 1px solid rgba(217, 48, 37, 0.2);
+  border-top: 1px solid rgba(217, 48, 37, 0.2);
 }
 
 .confirm-text {
   color: #5f6368;
   font-size: 0.875rem;
-  margin-right: 0.5rem;
 }
 
 .confirm-btn {
   background: none;
   border: none;
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .confirm-btn .material-icons {
-  font-size: 1.125rem;
+  font-size: 16px;
 }
 
-.confirm-yes {
-  color: #34a853;
+.confirm-btn.confirm-yes {
+  background-color: #d93025;
+  color: white;
 }
 
-.confirm-yes:hover {
-  background-color: #e6f4ea;
+.confirm-btn.confirm-yes:hover {
+  background-color: #b92318;
 }
 
-.confirm-no {
-  color: #d93025;
+.confirm-btn.confirm-no {
+  color: #5f6368;
 }
 
-.confirm-no:hover {
-  background-color: #fce8e8;
+.confirm-btn.confirm-no:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 </style>
